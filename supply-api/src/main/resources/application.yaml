@@ -1,0 +1,54 @@
+logging:
+  level:
+    liquibase: DEBUG
+    org.springframework.boot.autoconfigure.liquibase: DEBUG
+    org.springframework.boot.autoconfigure.jdbc: DEBUG
+spring:
+  application:
+    name: supply-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/stayforgedb
+    username: dbuser
+    password: ${POSTGRESQL_DBUSER_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 5000
+      leak-detection-threshold: 60000
+      initialization-fail-timeout: 1
+      isolate-internal-queries: true
+      allow-pool-suspension: true
+      read-only: false
+      register-mbeans: true
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+        socketTimeout: 30
+        loginTimeout: 10
+        connectTimeout: 10
+        cancelSignalTimeout: 10
+        tcpKeepAlive: true
+        defaultRowFetchSize: 1000
+        logUnclosedConnections: false
+        autosave: conservative
+      pool-name: StayForgeHikariPool
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-root.yaml
+    enabled: true
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
