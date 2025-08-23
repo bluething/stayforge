@@ -134,82 +134,91 @@
                 <db.url>jdbc:postgresql://localhost:5432/stayforgedb</db.url>
                 <db.username>dbuser</db.username>
                 <!-- Note: db.password must be provided via -D parameter -->
+                <testcontainers-jooq-plugin.version>0.0.4</testcontainers-jooq-plugin.version>
+                <postgresql.version>42.6.0</postgresql.version>
+                <testcontainers.version>1.19.1</testcontainers.version>
             </properties>
             <build>
                 <plugins>
-                    <!-- Liquibase: Update schema first -->
+                    <!-- Official Testcontainers jOOQ Plugin -->
                     <plugin>
-                        <groupId>org.liquibase</groupId>
-                        <artifactId>liquibase-maven-plugin</artifactId>
-                        <version>${liquibase-maven-plugin.version}</version>
-                        <configuration>
-                            <changeLogFile>src/main/resources/db/changelog/changelog-root.yaml</changeLogFile>
-                            <url>${db.url}</url>
-                            <username>${db.username}</username>
-                            <password>${db.password}</password>
-                            <driver>${db.driver}</driver>
-                        </configuration>
+                        <groupId>org.testcontainers</groupId>
+                        <artifactId>testcontainers-jooq-codegen-maven-plugin</artifactId>
+                        <version>${testcontainers-jooq-plugin.version}</version>
+                        <dependencies>
+                            <!-- PostgreSQL Testcontainer -->
+                            <dependency>
+                                <groupId>org.testcontainers</groupId>
+                                <artifactId>postgresql</artifactId>
+                                <version>${testcontainers.version}</version>
+                            </dependency>
+                            <!-- PostgreSQL Driver -->
+                            <dependency>
+                                <groupId>org.postgresql</groupId>
+                                <artifactId>postgresql</artifactId>
+                                <version>${postgresql.version}</version>
+                            </dependency>
+                            <!-- Liquibase for migrations -->
+                            <dependency>
+                                <groupId>org.liquibase</groupId>
+                                <artifactId>liquibase-core</artifactId>
+                                <version>4.33.0</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>update</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- jOOQ: Generate code after schema update -->
-                    <plugin>
-                        <groupId>org.jooq</groupId>
-                        <artifactId>jooq-codegen-maven</artifactId>
-                        <version>${jooq-codegen-maven.version}</version>
-                        <configuration>
-                            <jdbc>
-                                <driver>${db.driver}</driver>
-                                <url>${db.url}</url>
-                                <user>${db.username}</user>
-                                <password>${db.password}</password>
-                            </jdbc>
-                            <generator>
-                                <database>
-                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>
-                                    <inputSchema>public</inputSchema>
-                                    <includes>.*</includes>
-                                    <excludes>databasechangelog.*|databasechangeloglock.*</excludes>
-                                    <forcedTypes>
-                                        <forcedType>
-                                            <name>LOCALDATE</name>
-                                            <types>date</types>
-                                        </forcedType>
-                                        <forcedType>
-                                            <name>OFFSETDATETIME</name>
-                                            <types>timestamptz</types>
-                                        </forcedType>
-                                    </forcedTypes>
-                                </database>
-                                <generate>
-                                    <pojos>true</pojos>
-                                    <records>true</records>
-                                    <fluentSetters>true</fluentSetters>
-                                    <daos>false</daos> <!-- You might want DAOs later -->
-                                    <springAnnotations>true</springAnnotations> <!-- Since you're using Spring -->
-                                    <validationAnnotations>true</validationAnnotations> <!-- JSR-303 validation -->
-                                    <javaTimeTypes>true</javaTimeTypes> <!-- Ensure Java 8+ time types -->
-                                </generate>
-                                <target>
-                                    <packageName>io.github.bluething.stayforge.supplyapi.persistence.jooq</packageName>
-                                    <directory>${project.build.directory}/generated-sources/jooq</directory>
-                                    <clean>true</clean>
-                                </target>
-                            </generator>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>generate-sources</phase>
+                                <id>generate-jooq-sources</id>
                                 <goals>
                                     <goal>generate</goal>
                                 </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <!-- Database configuration -->
+                                    <database>
+                                        <type>POSTGRES</type>
+                                        <containerImage>postgres:17</containerImage>
+                                    </database>
+
+                                    <!-- Liquibase configuration -->
+                                    <liquibase>
+                                        <changeLogPath>src/main/resources/db/changelog/changelog-root.yaml</changeLogPath>
+                                    </liquibase>
+
+                                    <!-- jOOQ configuration -->
+                                    <jooq>
+                                        <generator>
+                                            <database>
+                                                <includes>.*</includes>
+                                                <excludes>databasechangelog.*|databasechangeloglock.*</excludes>
+                                                <inputSchema>public</inputSchema>
+                                                <forcedTypes>
+                                                    <forcedType>
+                                                        <name>LOCALDATE</name>
+                                                        <types>date</types>
+                                                    </forcedType>
+                                                    <forcedType>
+                                                        <name>OFFSETDATETIME</name>
+                                                        <types>timestamptz</types>
+                                                    </forcedType>
+                                                </forcedTypes>
+                                            </database>
+                                            <generate>
+                                                <pojos>true</pojos>
+                                                <records>true</records>
+                                                <fluentSetters>true</fluentSetters>
+                                                <daos>false</daos> <!-- You might want DAOs later -->
+                                                <springAnnotations>true</springAnnotations> <!-- Since you're using Spring -->
+                                                <validationAnnotations>true</validationAnnotations> <!-- JSR-303 validation -->
+                                                <javaTimeTypes>true</javaTimeTypes> <!-- Ensure Java 8+ time types -->
+                                            </generate>
+                                            <target>
+                                                <packageName>io.github.bluething.stayforge.supplyapi.persistence.jooq</packageName>
+                                                <directory>${project.build.directory}/generated-sources/jooq</directory>
+                                                <clean>true</clean>
+                                            </target>
+                                        </generator>
+                                    </jooq>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

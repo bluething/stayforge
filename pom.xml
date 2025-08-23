@@ -22,8 +22,6 @@
     <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
     <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
     <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-    <liquibase-maven-plugin.version>4.33.0</liquibase-maven-plugin.version>
-    <jooq-codegen-maven.version>3.20.6</jooq-codegen-maven.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
   </properties>
 
