@@ -40,6 +40,15 @@ target/generated-sources/jooq/io/github/bluething/stayforge/supplyapi/persistenc
 * Container cleanup happens automatically
 * Generated sources added to Maven build path
 
+## Benefits
+
+✅ **Zero Setup** - No manual container management  
+✅ **Official Plugin** - Maintained by Testcontainers team  
+✅ **Maven Standard** - Proper lifecycle integration  
+✅ **Automatic Cleanup** - No leftover containers  
+✅ **Schema-first** - Always in sync with database  
+✅ **CI/CD Ready** - Works anywhere Docker runs
+
 ## IDE Integration
 
 ### IntelliJ IDEA
@@ -180,7 +189,7 @@ The codegen profile uses:
 * PostgreSQL: 42.6.0
 * Container Image: postgres:17
 
-Further Reading
+## Further Reading
 
 * [jOOQ Manual](https://www.jooq.org/doc/latest/manual/)
 * [Liquibase Documentation](https://docs.liquibase.com/)
