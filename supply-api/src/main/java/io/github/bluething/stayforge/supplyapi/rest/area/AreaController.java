@@ -1,5 +1,6 @@
 package io.github.bluething.stayforge.supplyapi.rest.area;
 
+import io.github.bluething.stayforge.supplyapi.domain.area.AreaService;
 import io.github.bluething.stayforge.supplyapi.rest.PaginationRequest;
 import io.github.bluething.stayforge.supplyapi.rest.ValidationGroups;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +24,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/areas")
 @Validated
 @Tag(name = "Areas", description = "Geographic area management for hotel operators")
+@RequiredArgsConstructor
 class AreaController {
+
+    private final AreaService areaService;
+    private final AreaDtoMapper dtoMapper;
 
     @Operation(
             summary = "Create a new area",
@@ -72,8 +78,11 @@ class AreaController {
     public ResponseEntity<AreaResponse> createArea(
             @Validated(ValidationGroups.Create.class) @RequestBody CreateAreaRequest request) {
 
-        //TODO call service here
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        var command = dtoMapper.toCommand(request);
+        var areaData = areaService.createArea(command);
+        var response = dtoMapper.toResponse(areaData);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -103,8 +112,10 @@ class AreaController {
             @Parameter(description = "Area unique identifier", example = "123")
             @PathVariable("id") @Positive(message = "Area ID must be positive") Long id) {
 
-        //TODO call service here
-        return ResponseEntity.status(HttpStatus.OK).build();
+        var areaData = areaService.getAreaById(id);
+        var response = dtoMapper.toResponse(areaData);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -139,8 +150,11 @@ class AreaController {
             @PathVariable("id") @Positive(message = "Area ID must be positive") Long id,
             @Validated(ValidationGroups.Update.class) @RequestBody UpdateAreaRequest request) {
 
-        //TODO call service here
-        return ResponseEntity.status(HttpStatus.OK).build();
+        var command = dtoMapper.toCommand(request);
+        var areaData = areaService.updateArea(id, command);
+        var response = dtoMapper.toResponse(areaData);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -170,8 +184,8 @@ class AreaController {
             @Parameter(description = "Area unique identifier", example = "123")
             @PathVariable("id") @Positive(message = "Area ID must be positive") Long id) {
 
-        //TODO call service here
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        areaService.deleteArea(id);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -232,9 +246,11 @@ class AreaController {
             @Parameter(description = "Filter by area name (case-insensitive partial match)", example = "kuta")
             @RequestParam(value = "name", required = false) String name) {
 
-        PaginationRequest pagination = PaginationRequest.of(cursor, limit);
-        //TODO call service here
+        var pagination = PaginationRequest.of(cursor, limit);
+        var query = dtoMapper.toQuery(pagination, name);
+        var pagedResult = areaService.listAreas(query);
+        var response = dtoMapper.toListResponse(pagedResult);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(response);
     }
 }
